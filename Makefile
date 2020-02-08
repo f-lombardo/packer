@@ -18,12 +18,12 @@ GOLDFLAGS=-X $(GIT_IMPORT).GitCommit=$(GIT_COMMIT)$(GIT_DIRTY)
 
 export GOLDFLAGS
 
-.PHONY: bin checkversion ci default install-build-deps install-gen-deps fmt fmt-docs fmt-examples generate install-lint-deps lint \
-	lint-new-only releasebin test testacc testrace
+.PHONY: bin checkversion ci ci-lint default install-build-deps install-gen-deps fmt fmt-docs fmt-examples generate install-lint-deps lint \
+	releasebin test testacc testrace
 
 default: install-build-deps install-gen-deps generate testrace dev releasebin package dev fmt fmt-check mode-check fmt-docs fmt-examples
 
-ci: testrace lint-new-only ## Test in continuous integration
+ci: testrace ci-lint ## Test in continuous integration
 
 release: install-build-deps test releasebin package ## Build a release build
 
@@ -76,13 +76,13 @@ lint: install-lint-deps ## Lint Go code
 		echo "golangci-lint run ./$(PKG_NAME)/..."; \
 		golangci-lint run ./$(PKG_NAME)/...; \
 	else \
-		echo "golangci-lint run ./..."; \
-		golangci-lint run ./...; \
+		echo "golangci-lint run"; \
+		golangci-lint run; \
 	fi
 
-lint-new-only: install-lint-deps ## Lint newly added Go source files
+ci-lint: install-lint-deps ## On ci only lint newly added Go source files
 	@echo "==> Running linter on newly added Go source files..."
-	golangci-lint run --new-from-rev=origin/master
+	GO111MODULE=on golangci-lint run --new-from-rev=origin/master
 
 
 fmt: ## Format Go code
